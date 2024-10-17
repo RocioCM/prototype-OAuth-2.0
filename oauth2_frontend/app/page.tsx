@@ -1,78 +1,84 @@
-"use client";
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+import {useRouter} from 'next/navigation';
+import {useEffect, useState} from 'react';
+import Image from 'next/image';
+import styles from './page.module.css';
 import Button from '@mui/material/Button';
-import { useRouter, useSearchParams  } from 'next/navigation';
-import { useEffect, useState } from "react";
+import {CLIENT_URL} from '@/constants';
 
 export default function Home() {
-  const router = useRouter()
-  const query = useSearchParams();
-  const code = query.get('code')
+  const router = useRouter();
 
   const [visualizedData, setVisualizedData] = useState(<p></p>);
 
   function handleClick() {
     router.push(
-      "https://discord.com/oauth2/authorize?client_id=1289636085810593803&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fdiscord&scope=identify"
-    )
+      `https://discord.com/oauth2/authorize?client_id=1289636085810593803&response_type=code&redirect_uri=${CLIENT_URL}&scope=identify`
+    );
   }
 
   async function getData() {
     try {
-      const data = await fetch("http://localhost:8000/discord_data", {
+      const data = await fetch('/api', {
         method: 'GET',
         headers: {
-          'Authorization': sessionStorage.getItem("access_token") || ""
-        }
-      })
-      const dataJson = await data.json()
-      const username = dataJson['username']
-      const avatar = dataJson['avatar']
-      const id = dataJson['id']
+          Authorization: sessionStorage.getItem('access_token') || '',
+        },
+      });
+      const dataJson = await data.json();
+      const username = dataJson['username'];
+      const avatar = dataJson['avatar'];
+      const id = dataJson['id'];
       setVisualizedData(
         <div>
           <p>{username}</p>
-          <Image 
-          src={`https://cdn.discordapp.com/avatars/${id}/${avatar}`}
-          width={128}
-          height={128}
-          alt="No user data"
+          <Image
+            src={`https://cdn.discordapp.com/avatars/${id}/${avatar}`}
+            width={128}
+            height={128}
+            alt="No user data"
           />
         </div>
-      )
+      );
     } catch (error) {
-      console.log("Error fetching: ", error);
+      console.log('Error fetching: ', error);
       setVisualizedData(
         <div>
-          <p>No user data</p>      
+          <p>No user data</p>
         </div>
-      )
+      );
     }
   }
 
   async function getAccessToken(code: string) {
     try {
-      const res = await fetch("http://localhost:8000/access-token?code=" + code);
+      const res = await fetch('/api/access-token?code=' + code);
       const data = await res.json();
-      sessionStorage.setItem("access_token", data.access_token);
+      sessionStorage.setItem('access_token', data.access_token);
     } catch (error) {
-      console.log("Error fetching: ", error);
+      console.log('Error fetching: ', error);
     }
   }
 
   useEffect(() => {
     // Check if the code is in the URL and get the access token from the backend.
-    
+    // Access query parameters
+    const {searchParams} = new URL(window.location.href);
+    const code = searchParams.get('code');
+
     if (code) {
-      getAccessToken(String(code))
+      getAccessToken(code);
     }
-  }, [code])
+  }, []);
 
   return (
     <div className={styles.container}>
-      <Button onClick={handleClick} variant="outlined">Login with Discord</Button>
-      <Button onClick={getData} variant="outlined">get data</Button>
+      <Button onClick={handleClick} variant="outlined">
+        Login with Discord
+      </Button>
+      <Button onClick={getData} variant="outlined">
+        Get user data
+      </Button>
       {visualizedData}
     </div>
   );
