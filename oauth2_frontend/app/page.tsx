@@ -30,7 +30,7 @@ export default function Home() {
       const avatar = dataJson['avatar'];
       const id = dataJson['id'];
       setVisualizedData(
-        <div>
+        <div className={styles.card}>
           <p>{username}</p>
           <Image
             src={`https://cdn.discordapp.com/avatars/${id}/${avatar}`}
@@ -54,7 +54,9 @@ export default function Home() {
     try {
       const res = await fetch('/api/access-token?code=' + code);
       const data = await res.json();
-      sessionStorage.setItem('access_token', data.access_token);
+      if (data.access_token) {
+        sessionStorage.setItem('access_token', data.access_token);
+      }
     } catch (error) {
       console.log('Error fetching: ', error);
     }

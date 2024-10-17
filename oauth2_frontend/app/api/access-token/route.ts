@@ -10,14 +10,15 @@ export async function GET(request: NextRequest) {
   // Get access token and request user data
   if (code) {
     try {
+      // console.log('CODE: ', code);
       // Getting acess token
       const tokenResponseData = await fetch(
         'https://discord.com/api/oauth2/token',
         {
           method: 'POST',
           body: new URLSearchParams({
-            client_id: process.env.CLIENT_ID ?? '',
-            client_secret: process.env.CLIENT_SECRET ?? '',
+            client_id: process.env.DS_CLIENT_ID ?? '',
+            client_secret: process.env.DS_CLIENT_SECRET ?? '',
             code,
             grant_type: 'authorization_code',
             redirect_uri: CLIENT_URL,
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
       );
 
       const oauthData = await tokenResponseData.json();
-      console.log('DATA: ', oauthData);
+      // console.log('DATA: ', oauthData);
 
       if (!oauthData.token_type || !oauthData.access_token) {
         return NextResponse.json(
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
       }
 
       const accessToken = `${oauthData.token_type} ${oauthData.access_token}`;
-      console.log('TOKEN: ', accessToken);
+      // console.log('TOKEN: ', accessToken);
 
       return NextResponse.json({access_token: accessToken});
     } catch (error) {
